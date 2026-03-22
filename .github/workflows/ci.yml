@@ -49,81 +49,12 @@
 #         run: docker build -t devops-ai-tool:${{ github.sha }} .
 
 
-# name: CI - DevOps AI Tool
-
-# on:
-#   push:
-#     branches:
-#       - ci-branch
-#   pull_request:
-#     branches:
-#       - ci-branch
-
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-#     steps:
-#       # Checkout
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-
-#       # Setup Node
-#       - name: Setup Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '18'
-#           cache: 'npm'
-
-#       # Install dependencies
-#       - name: Install dependencies
-#         run: |
-#           if [ -f package-lock.json ]; then
-#             npm ci
-#           else
-#             npm install
-#           fi
-
-#       # Run tests
-#       - name: Run tests
-#         run: npm test
-
-#       # 📦 Upload test results (example)
-#       - name: Upload test artifacts
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: test-results
-#           path: |
-#             coverage/
-#             test-results/
-
-#   docker:
-#     runs-on: ubuntu-latest
-#     needs: test
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-
-#       # Build Docker image
-#       - name: Build Docker image
-#         run: docker build -t devops-ai-tool:${{ github.sha }} .
-
-#       # 📦 Save Docker image as artifact
-#       - name: Save Docker image
-#         run: docker save devops-ai-tool:${{ github.sha }} -o image.tar
-
-#       # 📤 Upload Docker image as artifact
-#       - name: Upload Docker artifact
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: docker-image
-#           path: image.tar
-
 name: CI - DevOps AI Tool
 
 on:
   push:
     branches:
-      - ci-branch   # change to main if needed
+      - ci-branch
   pull_request:
     branches:
       - ci-branch
@@ -131,44 +62,59 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout repository
+      # Checkout
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Setup Node.js
+      # Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
 
       # Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       # Run tests
       - name: Run tests
         run: npm test
 
-      # Build application
-      - name: Build application
-        run: npm run build
-
-      # Upload build artifact
-      - name: Upload artifact
+      # 📦 Upload test results (example)
+      - name: Upload test artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: app-artifact
-          path: dist/
+          name: test-results
+          path: |
+            coverage/
+            test-results/
 
-  # Optional Docker job (currently disabled)
-  # docker:
-  #   runs-on: ubuntu-latest
-  #   needs: test
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Build Docker image
-  #       run: docker build -t devops-ai-tool:${{ github.sha }} .
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Build Docker image
+      - name: Build Docker image
+        run: docker build -t devops-ai-tool:${{ github.sha }} .
+
+      # 📦 Save Docker image as artifact
+      - name: Save Docker image
+        run: docker save devops-ai-tool:${{ github.sha }} -o image.tar
+
+      # 📤 Upload Docker image as artifact
+      - name: Upload Docker artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: image.tar
+
