@@ -1,3 +1,54 @@
+# name: CI - DevOps AI Tool
+
+# on:
+#   push:
+#     branches:
+#       - ci-branch
+#   pull_request:
+#     branches:
+#       - ci-branch
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       # Step 1: Checkout the repository
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       # Step 2: Setup Node.js 18 with npm caching
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '18'
+#           cache: 'npm'
+
+#       # Step 3: Install dependencies
+#       # Use npm install if package-lock.json might not exist yet
+#       - name: Install dependencies
+#         run: |
+#           if [ -f package-lock.json ]; then
+#             npm ci
+#           else
+#             npm install
+#           fi
+
+#       # Step 4: Run tests
+#       - name: Run tests
+#         run: npm test
+
+#   # Optional Docker build job
+#   docker:
+#     runs-on: ubuntu-latest
+#     needs: test
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Build Docker image
+#         run: docker build -t devops-ai-tool:${{ github.sha }} .
+
+
 name: CI - DevOps AI Tool
 
 on:
@@ -12,19 +63,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the repository
+      # Checkout
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js 18 with npm caching
+      # Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
 
-      # Step 3: Install dependencies
-      # Use npm install if package-lock.json might not exist yet
+      # Install dependencies
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
@@ -33,11 +83,19 @@ jobs:
             npm install
           fi
 
-      # Step 4: Run tests
+      # Run tests
       - name: Run tests
         run: npm test
 
-  # Optional Docker build job
+      # 📦 Upload test results (example)
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage/
+            test-results/
+
   docker:
     runs-on: ubuntu-latest
     needs: test
@@ -45,5 +103,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Build Docker image
       - name: Build Docker image
         run: docker build -t devops-ai-tool:${{ github.sha }} .
+
+      # 📦 Save Docker image as artifact
+      - name: Save Docker image
+        run: docker save devops-ai-tool:${{ github.sha }} -o image.tar
+
+      # 📤 Upload Docker image as artifact
+      - name: Upload Docker artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: image.tar
